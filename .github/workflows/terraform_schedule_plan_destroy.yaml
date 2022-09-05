@@ -38,7 +38,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
-    - name: Run terraform apply
+    - name: Run terraform destroy
       run: terraform destroy -auto-approve -input=false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
