@@ -328,13 +328,13 @@ module "argocd" {
 module "metrics_server" {
   source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=initial_development"
 
-  name = "metrics-server"
+  name             = "metrics-server"
   argocd_namespace = local.argocd_namespace
 
-  source_repo = "https://github.com/kubernetes-sigs/metrics-server.git"
-  source_repo_path = "charts/metrics-server"
+  source_repo            = "https://github.com/kubernetes-sigs/metrics-server.git"
+  source_repo_path       = "charts/metrics-server"
   source_target_revision = "master"
-  destination_namespace = "kube-system"
+  destination_namespace  = "kube-system"
 
   depends_on = [module.argocd]
 }
@@ -342,28 +342,28 @@ module "metrics_server" {
 module "argocd_guestbook" {
   source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=initial_development"
 
-  name = "argocd-guestbook"
+  name             = "argocd-guestbook"
   argocd_namespace = local.argocd_namespace
 
-  source_repo = "https://github.com/argoproj/argocd-example-apps"
-  source_repo_path = "helm-guestbook"
+  source_repo            = "https://github.com/argoproj/argocd-example-apps"
+  source_repo_path       = "helm-guestbook"
   source_target_revision = "master"
 
-  project_cluster_resource_whitelist = [ 
+  project_cluster_resource_whitelist = [
     {
       group = "*"
-      kind = "Namespace"
+      kind  = "Namespace"
     },
   ]
 
   project_namespace_resource_whitelist = [
     {
       group = "apps"
-      kind = "Deployment"
+      kind  = "Deployment"
     },
     {
       group = "*"
-      kind = "Service"
+      kind  = "Service"
     },
   ]
 
