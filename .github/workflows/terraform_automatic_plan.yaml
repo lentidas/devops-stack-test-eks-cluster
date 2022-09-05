@@ -70,19 +70,21 @@ jobs:
           const output = `#### Terraform format and style: \`${{ steps.fmt.outcome }}\`
           #### Terraform initialization: \`${{ steps.init.outcome }}\`
           #### Terraform validation: \`${{ steps.validate.outcome }}\`
+          
           <details><summary>Show validation output</summary>
           
           \`\`\`\n
-          ${process.env.VALIDATE}
+          ${{ steps.validate.outputs.stdout }}
           \`\`\`
           
           </details>
           
           #### Terraform plan: `${{ steps.plan.outcome }}\`
+          
           <details><summary>Show plan</summary>
           
           \`\`\`\n
-          ${process.env.PLAN}
+          ${{ steps.plan.outputs.stdout }}
           \`\`\`
           
           </details>
