@@ -79,7 +79,7 @@ jobs:
           
           </details>
           
-          #### Terraform plan: `${{ steps.plan.outcome }}\`
+          #### Terraform plan: \`${{ steps.plan.outcome }}\`
           
           <details><summary>Show plan</summary>
           
