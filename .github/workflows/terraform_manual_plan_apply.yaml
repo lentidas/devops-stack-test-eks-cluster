@@ -1,12 +1,12 @@
 ---
-name: "Terraform apply on push to main"
+name: "Manual `terraform apply`"
 
 on:
   workflow_dispatch:
 
 jobs:
   terraform:
-    name: "Terraform Apply"
+    name: "terraform apply"
     runs-on: ubuntu-latest
     steps:
 

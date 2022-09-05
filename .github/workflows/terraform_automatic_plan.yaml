@@ -1,5 +1,5 @@
 ---
-name: "Terraform apply on push to main"
+name: "Automatic `terraform plan` on PR"
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   terraform:
-    name: "Terraform Automatic Plan"
+    name: "terraform plan"
     runs-on: ubuntu-latest
     steps:
 
