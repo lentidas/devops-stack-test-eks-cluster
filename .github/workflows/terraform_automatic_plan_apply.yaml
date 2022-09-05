@@ -1,5 +1,5 @@
 ---
-name: "Automatic `terraform apply` on push to main"
+name: "Automatic terraform apply on push to main"
 
 on:
   push:

@@ -1,5 +1,5 @@
 ---
-name: "Manual `terraform destroy`"
+name: "Manual terraform destroy`"
 
 on:
   workflow_dispatch:

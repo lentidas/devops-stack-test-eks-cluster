@@ -1,5 +1,5 @@
 ---
-name: "Manual `terraform apply`"
+name: "Manual terraform apply"
 
 on:
   workflow_dispatch:
