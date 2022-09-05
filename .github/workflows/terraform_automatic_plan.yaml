@@ -2,7 +2,7 @@
 name: "Terraform apply on push to main"
 
 on:
-  pull_requests:
+  pull_request:
     branches:
     - main
 
