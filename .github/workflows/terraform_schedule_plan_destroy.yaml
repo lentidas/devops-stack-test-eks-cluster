@@ -38,7 +38,6 @@ jobs:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
     - name: Run terraform apply on push to main branch
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform destroy -auto-approve -input=false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
