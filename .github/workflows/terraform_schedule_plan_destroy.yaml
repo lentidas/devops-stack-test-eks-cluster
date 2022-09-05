@@ -20,7 +20,7 @@ jobs:
 
     - name: Run terraform init
       id: init
-      run: terraform init
+      run: terraform init -no-color
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TF_ACTION_WORKING_DIR: '.'
@@ -44,7 +44,7 @@ jobs:
         AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
     - name: Run terraform destroy
-      run: terraform destroy -auto-approve -input=false
+      run: terraform destroy -no-color -auto-approve -input=false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TF_ACTION_WORKING_DIR: '.'

@@ -24,7 +24,7 @@ jobs:
 
     - name: Run terraform init
       id: init
-      run: terraform init
+      run: terraform init -no-color
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TF_ACTION_WORKING_DIR: '.'
@@ -34,11 +34,11 @@ jobs:
     
     - name: Run terraform validate
       id: validate
-      run: terraform validate
+      run: terraform validate -no-color
 
     - name: Run terraform plan
       id: plan
-      run: terraform plan -input=false
+      run: terraform plan -no-color -input=false
       continue-on-error: true # This is in order to continue even if there is an error so we can get the output
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
