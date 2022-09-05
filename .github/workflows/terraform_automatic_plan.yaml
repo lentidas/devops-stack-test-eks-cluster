@@ -34,11 +34,11 @@ jobs:
     
     - name: Run terraform validate
       id: validate
-      run: terraform validate -no-color
+      run: terraform validate
 
     - name: Run terraform plan
       id: plan
-      run: terraform plan -no-color -input=false
+      run: terraform plan -input=false
       continue-on-error: true # This is in order to continue even if there is an error so we can get the output
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,17 +56,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          // 1. Retrieve existing bot comments for the PR
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-          })
-          const botComment = comments.find(comment => {
-            return comment.user.type === 'Bot' && comment.body.includes('Terraform format and style')
-          })
-
-          // 2. Prepare format of the comment
           const output = `#### Terraform format and style:\`${{ steps.fmt.outcome }}\`
           #### Terraform initialization: \`${{ steps.init.outcome }}\`
           #### Terraform validation: \`${{ steps.validate.outcome }}\`
@@ -89,22 +78,12 @@ jobs:
           
           *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
 
-          // 3. If we have a comment, update it, otherwise create a new one
-          if (botComment) {
-            github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: botComment.id,
-              body: output
-            })
-          } else {
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-          }
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
 
     # This step is needed so the workflow appears as unsuccessful in the event of a failed terraform plan
     # We only need this because we used `continue-on-error: true` on the `terraform plan` step
