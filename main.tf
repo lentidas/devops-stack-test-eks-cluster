@@ -294,7 +294,9 @@ module "metrics_server" {
 }
 
 module "helloworld_apps" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-applicationset.git"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-applicationset.git"
+  source = "git::https://github.com/camptocamp/devops-stack-module-applicationset.git?ref=applicationset_modifs"
+  # TODO Remove ref to applicationset_modifs
 
   depends_on = [module.argocd]
 
