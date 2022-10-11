@@ -196,14 +196,14 @@ module "prometheus-stack" {
         job_name = "relabel_test"
         metric_relabel_configs = [
           {
-            source_labels = [namespace]
+            source_labels = ["namespace"]
             regex         = "helloworld"
             target_label  = "team"
             replacement   = "t5"
             action        = "replace"
           },
           {
-            source_labels = [namespace]
+            source_labels = ["namespace"]
             regex         = "helloworld"
             target_label  = "environment"
             replacement   = "prod"
