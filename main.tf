@@ -157,7 +157,7 @@ module "oidc" {
 
 module "thanos" {
   # source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks"
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=chart-upgrade"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=chart_upgrade"
   # TODO Remove ref to chart-upgrade
 
   cluster_name     = module.eks.cluster_name
