@@ -206,7 +206,7 @@ module "prometheus-stack" {
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//kind?ref=v1.0.0-alpha.2"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=v1.0.0-alpha.2"
 
   cluster_name     = module.eks.cluster_name
   argocd_namespace = local.argocd_namespace
