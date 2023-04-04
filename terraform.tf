@@ -10,6 +10,7 @@ terraform {
   required_providers {
     argocd = {
       source = "oboukili/argocd"
+      version = "~> 4"
     }
     kubernetes = {
       source = "hashicorp/kubernetes"
