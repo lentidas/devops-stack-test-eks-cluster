@@ -62,15 +62,13 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=v1.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=v2.0.2"
 
   cluster_name       = local.cluster_name
   kubernetes_version = local.cluster_version
   base_domain        = local.base_domain
 
-  vpc_id         = module.vpc.vpc_id
-  vpc_cidr_block = module.vpc.vpc_cidr_block
-
+  vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnets
   public_subnet_ids  = module.vpc.public_subnets
 
@@ -108,13 +106,13 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v1.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.1.0"
 
   depends_on = [module.eks]
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v1.2.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v2.0.0"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
@@ -127,9 +125,8 @@ module "traefik" {
   }
 }
 
-
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v3.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v5.0.0"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
@@ -145,7 +142,7 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=v2.0.2"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=v4.0.0"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
 
@@ -163,7 +160,7 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v1.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v2.0.0"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
@@ -188,7 +185,8 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v2.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v5.0.0"
+
 
   cluster_name     = module.eks.cluster_name
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
@@ -219,20 +217,24 @@ module "kube-prometheus-stack" {
     cert-manager = module.cert-manager.id
     oidc         = module.oidc.id
     thanos       = module.thanos.id
+    loki-stack   = module.loki-stack.id
   }
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v1.1.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=fix_variables"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
   cluster_issuer = local.cluster_issuer
 
-  admin_enabled            = "true"
   namespace                = module.argocd_bootstrap.argocd_namespace
   accounts_pipeline_tokens = module.argocd_bootstrap.argocd_accounts_pipeline_tokens
   server_secretkey         = module.argocd_bootstrap.argocd_server_secretkey
+
+  admin_enabled = true
+  exec_enabled  = true
 
   oidc = {
     name         = "OIDC"
@@ -249,6 +251,13 @@ module "argocd" {
     ]
   }
 
+  rbac = {
+    policy_csv = <<-EOT
+      g, pipeline, role:admin
+      g, devops-stack-admins, role:admin
+    EOT
+  }
+
   dependency_ids = {
     argocd                = module.argocd_bootstrap.id
     traefik               = module.traefik.id
@@ -259,7 +268,7 @@ module "argocd" {
 }
 
 module "metrics_server" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=v1.2.2"
+  source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=v2.0.0"
 
   name             = "metrics-server"
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
