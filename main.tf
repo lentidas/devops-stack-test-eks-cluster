@@ -18,7 +18,7 @@ provider "helm" {
 }
 
 provider "argocd" {
-  server_addr                 = "127.0.0.1:8080"
+  server_addr                 = "placeholder.camptocamp.com" # Needed for the bootstrap, otherwise the port-forwarding is what it's used.
   auth_token                  = module.argocd_bootstrap.argocd_auth_token
   insecure                    = true
   plain_text                  = true
@@ -82,6 +82,20 @@ module "eks" {
       desired_size      = 2
       target_group_arns = module.eks.nlb_target_groups
     },
+    "${module.eks.cluster_name}-monitoring" = {
+      instance_type     = "m5a.large"
+      min_size          = 2
+      max_size          = 3
+      desired_size      = 2
+      target_group_arns = module.eks.nlb_target_groups
+      taints = {
+        nodegroup = {
+          key    = "nodegroup"
+          value  = "monitoring"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
   }
 
   create_public_nlb = true
@@ -106,18 +120,20 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.1.2"
 
   depends_on = [module.eks]
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v2.0.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v2.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=fix_autosync_ci_add_chart_updater"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
 
+  app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
 
   dependency_ids = {
@@ -126,12 +142,14 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v5.0.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v5.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=fix_autosync_ci_add_chart_updater"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
 
+  app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
 
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
@@ -142,9 +160,12 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=v4.0.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=v4.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=fix_autosync_ci_add_chart_updater"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+
+  app_autosync = local.app_autosync
 
   distributed_mode = true
 
@@ -160,12 +181,15 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v2.0.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v2.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=fix_autosync_ci_add_chart_updater"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
   cluster_issuer   = local.cluster_issuer
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+
+  app_autosync = local.app_autosync
 
   metrics_storage = {
     bucket_id    = aws_s3_bucket.thanos_metrics_storage.id
@@ -185,13 +209,15 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v5.0.0"
-
+  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v5.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=fix_autosync_ci_add_chart_updater"
 
   cluster_name     = module.eks.cluster_name
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
   base_domain      = module.eks.base_domain
   cluster_issuer   = local.cluster_issuer
+
+  app_autosync = local.app_autosync
 
   metrics_storage = {
     bucket_id    = aws_s3_bucket.thanos_metrics_storage.id
@@ -222,8 +248,8 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.1.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=fix_variables"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.1.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=fix_autosync_ci_add_chart_updater"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
@@ -232,6 +258,8 @@ module "argocd" {
   namespace                = module.argocd_bootstrap.argocd_namespace
   accounts_pipeline_tokens = module.argocd_bootstrap.argocd_accounts_pipeline_tokens
   server_secretkey         = module.argocd_bootstrap.argocd_server_secretkey
+
+  app_autosync = local.app_autosync
 
   admin_enabled = true
   exec_enabled  = true
@@ -268,14 +296,17 @@ module "argocd" {
 }
 
 module "metrics_server" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=v2.0.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=v2.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=ISDEVOPS-238-fix-autosync"
 
   name             = "metrics-server"
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
 
+  app_autosync = local.app_autosync
+
   source_repo            = "https://github.com/kubernetes-sigs/metrics-server.git"
   source_repo_path       = "charts/metrics-server"
-  source_target_revision = "metrics-server-helm-chart-3.8.3"
+  source_target_revision = "metrics-server-helm-chart-3.10.0"
   destination_namespace  = "kube-system"
 
   dependency_ids = {
