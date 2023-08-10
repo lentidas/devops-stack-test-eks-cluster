@@ -35,7 +35,7 @@ resource "aws_efs_mount_target" "eks" {
 }
 
 module "efs" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-efs-csi-driver.git?ref=v1.0.2"
+  source = "git::https://github.com/camptocamp/devops-stack-module-efs-csi-driver.git?ref=v2.0.1"
 
   cluster_name     = local.cluster_name
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
@@ -49,7 +49,7 @@ module "efs" {
 }
 
 module "ebs" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v1.0.2"
+  source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v2.0.1"
 
   cluster_name     = local.cluster_name
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
