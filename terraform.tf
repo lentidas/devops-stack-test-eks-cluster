@@ -22,7 +22,39 @@ terraform {
     }
     argocd = {
       source  = "oboukili/argocd"
-      version = "~> 5"
+      version = "~> 4"
     }
+  }
+}
+
+# The providers configurations below depend on the output of some of the modules declared on other *tf files.
+# However, for clarity and ease of maintenance we grouped them all together in this section.
+
+provider "kubernetes" {
+  host                   = module.eks.kubernetes_host
+  cluster_ca_certificate = module.eks.kubernetes_cluster_ca_certificate
+  token                  = module.eks.kubernetes_token
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.kubernetes_host
+    cluster_ca_certificate = module.eks.kubernetes_cluster_ca_certificate
+    token                  = module.eks.kubernetes_token
+  }
+}
+
+provider "argocd" {
+  server_addr                 = "placeholder.camptocamp.com" # Needed for the bootstrap, otherwise the port-forwarding is what it's used.
+  auth_token                  = module.argocd_bootstrap.argocd_auth_token
+  insecure                    = true
+  plain_text                  = true
+  port_forward                = true
+  port_forward_with_namespace = module.argocd_bootstrap.argocd_namespace
+
+  kubernetes {
+    host                   = module.eks.kubernetes_host
+    cluster_ca_certificate = module.eks.kubernetes_cluster_ca_certificate
+    token                  = module.eks.kubernetes_token
   }
 }

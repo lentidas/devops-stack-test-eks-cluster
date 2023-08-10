@@ -35,11 +35,12 @@ resource "aws_efs_mount_target" "eks" {
 }
 
 module "efs" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-efs-csi-driver.git?ref=v2.0.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-efs-csi-driver.git?ref=fix_autosync_ci_add_chart_updater"
+  source = "git::https://github.com/camptocamp/devops-stack-module-efs-csi-driver.git?ref=v1.0.2"
 
-  cluster_name            = local.cluster_name
-  argocd_namespace        = module.argocd_bootstrap.argocd_namespace
+  cluster_name     = local.cluster_name
+  argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  app_autosync     = local.app_autosync
+
   efs_file_system_id      = resource.aws_efs_file_system.eks.id
   create_role             = true
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
@@ -48,11 +49,12 @@ module "efs" {
 }
 
 module "ebs" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v2.0.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=fix_autosync_ci_add_chart_updater"
+  source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v1.0.2"
 
-  cluster_name            = local.cluster_name
-  argocd_namespace        = module.argocd_bootstrap.argocd_namespace
+  cluster_name     = local.cluster_name
+  argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  app_autosync     = local.app_autosync
+
   create_role             = true
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
 
