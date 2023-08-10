@@ -22,7 +22,7 @@ terraform {
     }
     argocd = {
       source  = "oboukili/argocd"
-      version = "~> 5"
+      version = "~> 6"
     }
   }
 }
@@ -45,12 +45,10 @@ provider "helm" {
 }
 
 provider "argocd" {
-  server_addr                 = "placeholder.camptocamp.com" # Needed for the bootstrap, otherwise the port-forwarding is what it's used.
   auth_token                  = module.argocd_bootstrap.argocd_auth_token
+  port_forward_with_namespace = module.argocd_bootstrap.argocd_namespace
   insecure                    = true
   plain_text                  = true
-  port_forward                = true
-  port_forward_with_namespace = module.argocd_bootstrap.argocd_namespace
 
   kubernetes {
     host                   = module.eks.kubernetes_host
