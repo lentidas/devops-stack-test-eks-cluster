@@ -25,6 +25,8 @@ module "vpc" {
 
 module "eks" {
   source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=v2.0.2"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=main"
+  # source = "../../devops-stack-module-cluster-eks"
 
   cluster_name       = local.cluster_name
   kubernetes_version = local.cluster_version
@@ -44,20 +46,20 @@ module "eks" {
       desired_size      = 2
       target_group_arns = module.eks.nlb_target_groups
     },
-    "${module.eks.cluster_name}-monitoring" = {
-      instance_type     = "m5a.large"
-      min_size          = 2
-      max_size          = 3
-      desired_size      = 2
-      target_group_arns = module.eks.nlb_target_groups
-      taints = {
-        nodegroup = {
-          key    = "nodegroup"
-          value  = "monitoring"
-          effect = "NO_SCHEDULE"
-        }
-      }
-    },
+    # "${module.eks.cluster_name}-monit" = {
+    #   instance_type     = "m5a.large"
+    #   min_size          = 2
+    #   max_size          = 3
+    #   desired_size      = 2
+    #   target_group_arns = module.eks.nlb_target_groups
+    #   taints = {
+    #     nodegroup = {
+    #       key    = "nodegroup"
+    #       value  = "monitoring"
+    #       effect = "NO_SCHEDULE"
+    #     }
+    #   }
+    # },
   }
 
   create_public_nlb = true
@@ -65,6 +67,7 @@ module "eks" {
 
 module "oidc" {
   source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.0.0"
+  # source = "../../devops-stack-module-oidc-aws-cognito"
 
   cluster_name = module.eks.cluster_name
   base_domain  = module.eks.base_domain
@@ -82,7 +85,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.1.3"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=chart-autoupdate-minor-argocd"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   depends_on = [module.eks]
@@ -172,7 +175,7 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v6.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v6.1.1"
   # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   cluster_name     = module.eks.cluster_name
@@ -211,8 +214,10 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.1.3"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=chart-autoupdate-minor-argocd"
   # source = "../../devops-stack-module-argocd"
+
+  target_revision = "chart-autoupdate-minor-argocd"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
