@@ -2,12 +2,12 @@ data "aws_availability_zones" "available" {}
 
 module "vpc" {
   source               = "terraform-aws-modules/vpc/aws"
-  version              = "~> 3.0"
+  version              = "~> 5.0"
   name                 = module.eks.cluster_name
   cidr                 = local.vpc_cidr
   azs                  = data.aws_availability_zones.available.names
-  private_subnets      = local.vpc_private_subnets
-  public_subnets       = local.vpc_public_subnets
+  private_subnets      = local.private_subnets
+  public_subnets       = local.public_subnets
   enable_nat_gateway   = true
   create_igw           = true
   enable_dns_hostnames = true

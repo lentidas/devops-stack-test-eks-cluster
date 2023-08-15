@@ -27,7 +27,7 @@ resource "aws_security_group" "efs_eks" {
 }
 
 resource "aws_efs_mount_target" "eks" {
-  count = length(local.vpc_private_subnets)
+  count = length(local.private_subnets)
 
   file_system_id  = resource.aws_efs_file_system.eks.id
   subnet_id       = element(module.vpc.private_subnets, count.index)

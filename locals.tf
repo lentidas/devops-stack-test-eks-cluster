@@ -1,12 +1,16 @@
 locals {
   cluster_version        = "1.27"
-  cluster_name           = "gh-eks-cluster"
-  base_domain            = "is-sandbox.camptocamp.com"
+  cluster_name           = "gh-eks-cluster"            # Must be unique for each DevOps Stack deployment in a single AWS account.
+  base_domain            = "is-sandbox.camptocamp.com" # Must match a Route53 zone in the AWS account where you are deploying the DevOps Stack.
   cluster_issuer         = "letsencrypt-staging"
-  enable_service_monitor = false # Can be enabled after the first bootstrap
+  enable_service_monitor = false # Can be enabled after the first bootstrap.
   app_autosync           = true ? { allow_empty = false, prune = true, self_heal = true } : {}
 
-  vpc_cidr            = "10.56.0.0/16"
-  vpc_private_subnets = ["10.56.1.0/24", "10.56.2.0/24", "10.56.3.0/24"]
-  vpc_public_subnets  = ["10.56.4.0/24", "10.56.5.0/24", "10.56.6.0/24"]
+  # The VPC CIDR must be unique for each DevOps Stack deployment in a single AWS account.
+  vpc_cidr = "10.56.0.0/16"
+  # Automatic subnets IP range calculation, splitting the vpc_cidr above into 6 subnets.
+  private_subnets_cidr = cidrsubnet(local.vpc_cidr, 1, 0)
+  public_subnets_cidr  = cidrsubnet(local.vpc_cidr, 1, 1)
+  private_subnets      = cidrsubnets(local.private_subnets_cidr, 2, 2, 2)
+  public_subnets       = cidrsubnets(local.public_subnets_cidr, 2, 2, 2)
 }
