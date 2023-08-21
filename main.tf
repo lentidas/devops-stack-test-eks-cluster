@@ -24,12 +24,11 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=v2.0.2"
-  # source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=main"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=v3.0.0"
   # source = "../../devops-stack-module-cluster-eks"
 
   cluster_name       = local.cluster_name
-  kubernetes_version = local.cluster_version
+  kubernetes_version = local.kubernetes_version
   base_domain        = local.base_domain
 
   vpc_id             = module.vpc.vpc_id
@@ -40,26 +39,34 @@ module "eks" {
 
   node_groups = {
     "${module.eks.cluster_name}-main" = {
-      instance_type     = "m5a.large"
-      min_size          = 2
-      max_size          = 3
-      desired_size      = 2
-      target_group_arns = module.eks.nlb_target_groups
+      instance_type   = ["m5a.large"]
+      min_size        = 3
+      max_size        = 3
+      desired_size    = 3
+      nlbs_attachment = true
+      block_device_mappings = {
+        "default" = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size = 100
+          }
+        }
+      }
     },
-    # "${module.eks.cluster_name}-monit" = {
-    #   instance_type     = "m5a.large"
-    #   min_size          = 2
-    #   max_size          = 3
-    #   desired_size      = 2
-    #   target_group_arns = module.eks.nlb_target_groups
-    #   taints = {
-    #     nodegroup = {
-    #       key    = "nodegroup"
-    #       value  = "monitoring"
-    #       effect = "NO_SCHEDULE"
-    #     }
-    #   }
-    # },
+    "${module.eks.cluster_name}-monit" = {
+      instance_type     = ["m5a.large"]
+      min_size          = 1
+      max_size          = 2
+      desired_size      = 1
+      target_group_arns = module.eks.nlb_target_groups
+      taints = {
+        nodegroup = {
+          key    = "nodegroup"
+          value  = "monitoring"
+          effect = "NO_SCHEDULE"
+        }
+      }
+    },
   }
 
   create_public_nlb = true
@@ -76,23 +83,23 @@ module "oidc" {
 
   user_map = {
     gheleno = {
-      username    = "gheleno"
-      email       = "goncalo.heleno@camptocamp.com"
-      given_name  = "Gonçalo"
-      family_name = "Heleno"
+      username   = "gheleno"
+      email      = "goncalo.heleno@camptocamp.com"
+      first_name = "Gonçalo"
+      last_name  = "Heleno"
     }
   }
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=chart-autoupdate-minor-argocd"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.2.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   depends_on = [module.eks]
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v2.0.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v3.0.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   cluster_name     = module.eks.cluster_name
@@ -143,6 +150,7 @@ module "loki-stack" {
 
   dependency_ids = {
     argocd = module.argocd_bootstrap.id
+    ebs    = module.ebs.id
   }
 }
 
@@ -168,6 +176,7 @@ module "thanos" {
 
   dependency_ids = {
     argocd       = module.argocd_bootstrap.id
+    ebs          = module.ebs.id
     traefik      = module.traefik.id
     cert-manager = module.cert-manager.id
     oidc         = module.oidc.id
@@ -205,6 +214,7 @@ module "kube-prometheus-stack" {
 
   dependency_ids = {
     argocd       = module.argocd_bootstrap.id
+    ebs          = module.ebs.id
     traefik      = module.traefik.id
     cert-manager = module.cert-manager.id
     oidc         = module.oidc.id
@@ -214,10 +224,8 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=chart-autoupdate-minor-argocd"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.2.0"
   # source = "../../devops-stack-module-argocd"
-
-  target_revision = "chart-autoupdate-minor-argocd"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
@@ -228,7 +236,7 @@ module "argocd" {
 
   app_autosync = local.app_autosync
 
-  admin_enabled = true
+  admin_enabled = false
   exec_enabled  = true
 
   oidc = {

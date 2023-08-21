@@ -45,11 +45,15 @@ module "efs" {
   create_role             = true
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.argocd_bootstrap]
+  dependency_ids = {
+    argocd = module.argocd_bootstrap.id
+  }
 }
 
 module "ebs" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v2.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v2.2.0"
+
+  target_revision = "chart-autoupdate-minor-ebs-csi-driver"
 
   cluster_name     = local.cluster_name
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
@@ -58,5 +62,7 @@ module "ebs" {
   create_role             = true
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
 
-  depends_on = [module.argocd_bootstrap]
+  dependency_ids = {
+    argocd = module.argocd_bootstrap.id
+  }
 }
