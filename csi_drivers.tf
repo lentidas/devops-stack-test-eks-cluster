@@ -53,8 +53,6 @@ module "efs" {
 module "ebs" {
   source = "git::https://github.com/camptocamp/devops-stack-module-ebs-csi-driver.git?ref=v2.2.0"
 
-  target_revision = "chart-autoupdate-minor-ebs-csi-driver"
-
   cluster_name     = local.cluster_name
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
   app_autosync     = local.app_autosync
