@@ -24,7 +24,7 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks?ref=v3.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v3.0.0"
   # source = "../../devops-stack-module-cluster-eks"
 
   cluster_name       = local.cluster_name
@@ -98,6 +98,21 @@ module "argocd_bootstrap" {
   depends_on = [module.eks]
 }
 
+module "metrics-server" {
+  # source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=v1.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=feat_first_implementation"
+
+  target_revision = "feat_first_implementation"
+
+  argocd_namespace = module.argocd_bootstrap.argocd_namespace
+
+  app_autosync = local.app_autosync
+
+  dependency_ids = {
+    argocd = module.argocd_bootstrap.id
+  }
+}
+
 module "traefik" {
   source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v3.0.0"
   # source = "../../devops-stack-module-traefik/eks"
@@ -133,8 +148,8 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack//eks?ref=v4.0.2"
-  source = "../../devops-stack-module-loki-stack/eks"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v4.0.2"
+  # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
 
@@ -271,24 +286,5 @@ module "argocd" {
     cert-manager          = module.cert-manager.id
     oidc                  = module.oidc.id
     kube-prometheus-stack = module.kube-prometheus-stack.id
-  }
-}
-
-module "metrics_server" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-application.git?ref=v2.1.0"
-  # source = "../../devops-stack-module-application"
-
-  name             = "metrics-server"
-  argocd_namespace = module.argocd_bootstrap.argocd_namespace
-
-  app_autosync = local.app_autosync
-
-  source_repo            = "https://github.com/kubernetes-sigs/metrics-server.git"
-  source_repo_path       = "charts/metrics-server"
-  source_target_revision = "metrics-server-helm-chart-3.11.0"
-  destination_namespace  = "kube-system"
-
-  dependency_ids = {
-    argocd = module.argocd.id
   }
 }
