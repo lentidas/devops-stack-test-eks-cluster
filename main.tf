@@ -73,7 +73,7 @@ module "eks" {
 }
 
 module "oidc" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.0.1"
   # source = "../../devops-stack-module-oidc-aws-cognito"
 
   cluster_name = module.eks.cluster_name
@@ -99,10 +99,8 @@ module "argocd_bootstrap" {
 }
 
 module "metrics-server" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=v1.0.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=feat_first_implementation"
-
-  target_revision = "feat_first_implementation"
+  source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=v1.0.0"
+  # source = "../../devops-stack-module-metrics-server"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
 
@@ -114,7 +112,7 @@ module "metrics-server" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v3.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v3.1.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   cluster_name     = module.eks.cluster_name
@@ -130,7 +128,7 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v5.2.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v5.3.0"
   # source = "../../devops-stack-module-cert-manager/eks"
 
   cluster_name     = module.eks.cluster_name
@@ -148,7 +146,7 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v5.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v5.1.0"
   # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
@@ -168,7 +166,7 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v2.5.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v2.6.0"
   # source          = "../../devops-stack-module-thanos/eks"
 
   # target_revision = "chart-autoupdate-patch-thanos"
@@ -199,7 +197,7 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v7.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v7.1.0"
   # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   # target_revision = "chart-autoupdate-major-kube-prometheus-stack"
