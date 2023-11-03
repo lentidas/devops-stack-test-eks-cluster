@@ -112,7 +112,7 @@ module "metrics-server" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v3.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v4.0.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   cluster_name     = module.eks.cluster_name
