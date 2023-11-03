@@ -92,8 +92,14 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.4.0"
-  # source = "../../devops-stack-module-argocd/bootstrap"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.4.0"
+  source = "../../devops-stack-module-argocd/bootstrap"
+
+  argocd_projects = {
+    "${module.eks.cluster_name}" = {
+      destination_cluster = "in-cluster"
+    }
+  }
 
   depends_on = [module.eks]
 }
@@ -103,6 +109,7 @@ module "metrics-server" {
   # source = "../../devops-stack-module-metrics-server"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  argocd_project   = module.eks.cluster_name
 
   app_autosync = local.app_autosync
 
@@ -112,15 +119,18 @@ module "metrics-server" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v3.1.0"
-  # source = "../../devops-stack-module-traefik/eks"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v4.0.0"
+  source = "../../devops-stack-module-traefik/eks"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  argocd_project   = module.eks.cluster_name
 
   app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
+
+  enable_https_redirection = true
 
   dependency_ids = {
     argocd = module.argocd_bootstrap.id
@@ -128,12 +138,13 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v5.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v6.0.0"
   # source = "../../devops-stack-module-cert-manager/eks"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  argocd_project   = module.eks.cluster_name
 
   app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
@@ -150,6 +161,7 @@ module "loki-stack" {
   # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  argocd_project   = module.eks.cluster_name
 
   app_autosync = local.app_autosync
 
@@ -175,6 +187,7 @@ module "thanos" {
   base_domain      = module.eks.base_domain
   cluster_issuer   = local.cluster_issuer
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  argocd_project   = module.eks.cluster_name
 
   app_autosync = local.app_autosync
 
@@ -203,9 +216,10 @@ module "kube-prometheus-stack" {
   # target_revision = "chart-autoupdate-major-kube-prometheus-stack"
 
   cluster_name     = module.eks.cluster_name
-  argocd_namespace = module.argocd_bootstrap.argocd_namespace
   base_domain      = module.eks.base_domain
   cluster_issuer   = local.cluster_issuer
+  argocd_namespace = module.argocd_bootstrap.argocd_namespace
+  argocd_project   = module.eks.cluster_name
 
   app_autosync = local.app_autosync
 
@@ -239,14 +253,15 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.4.0"
-  # source = "../../devops-stack-module-argocd"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.4.0"
+  source = "../../devops-stack-module-argocd"
 
   # target_revision = "chart-autoupdate-minor-argocd"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
   cluster_issuer = local.cluster_issuer
+  argocd_project = module.eks.cluster_name
 
   accounts_pipeline_tokens = module.argocd_bootstrap.argocd_accounts_pipeline_tokens
   server_secretkey         = module.argocd_bootstrap.argocd_server_secretkey
