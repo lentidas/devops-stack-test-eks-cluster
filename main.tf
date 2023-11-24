@@ -92,8 +92,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.4.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=ISDEVOPS-243-cluster-destination-variable"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v3.5.1"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -105,7 +104,7 @@ module "argocd_bootstrap" {
   depends_on = [module.eks]
 }
 
-module "metrics-server" {
+module "metrics_server" {
   source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=v1.0.0"
   # source = "../../devops-stack-module-metrics-server"
 
@@ -120,8 +119,7 @@ module "metrics-server" {
 }
 
 module "traefik" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v4.0.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=ISDEVOPS-248"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v4.1.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   cluster_name     = module.eks.cluster_name
@@ -132,15 +130,13 @@ module "traefik" {
   app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
 
-  enable_https_redirection = true
-
   dependency_ids = {
     argocd = module.argocd_bootstrap.id
   }
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v6.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v7.0.1"
   # source = "../../devops-stack-module-cert-manager/eks"
 
   cluster_name     = module.eks.cluster_name
@@ -159,8 +155,7 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v5.2.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=ISDEVOPS-248"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v6.0.0"
   # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_namespace = module.argocd_bootstrap.argocd_namespace
@@ -183,8 +178,6 @@ module "loki-stack" {
 module "thanos" {
   source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v2.7.0"
   # source          = "../../devops-stack-module-thanos/eks"
-
-  # target_revision = "chart-autoupdate-patch-thanos"
 
   cluster_name     = module.eks.cluster_name
   base_domain      = module.eks.base_domain
@@ -254,11 +247,8 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.4.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=ISDEVOPS-243-cluster-destination-variable"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v3.5.1"
   # source = "../../devops-stack-module-argocd"
-
-  # target_revision = "chart-autoupdate-minor-argocd"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
