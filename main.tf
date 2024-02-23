@@ -70,7 +70,7 @@ module "eks" {
 }
 
 module "oidc" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.0.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.1.0"
   # source = "../../devops-stack-module-oidc-aws-cognito"
 
   cluster_name = module.eks.cluster_name
