@@ -1,7 +1,8 @@
 locals {
-  kubernetes_version       = "1.28"
+  kubernetes_version       = "1.29"
   cluster_name             = "gh-eks-cluster"            # Must be unique for each DevOps Stack deployment in a single AWS account.
   base_domain              = "is-sandbox.camptocamp.com" # Must match a Route 53 zone in the AWS account where you are deploying the DevOps Stack.
+  subdomain                = ""
   cluster_issuer           = module.cert-manager.cluster_issuers.staging
   letsencrypt_issuer_email = "letsencrypt@camptocamp.com"
   enable_service_monitor   = false # Can be enabled after the first bootstrap.

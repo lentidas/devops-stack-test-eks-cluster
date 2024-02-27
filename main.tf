@@ -24,12 +24,13 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v3.0.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v3.1.0"
   # source = "../../devops-stack-module-cluster-eks"
 
   cluster_name       = local.cluster_name
   kubernetes_version = local.kubernetes_version
   base_domain        = local.base_domain
+  subdomain          = local.subdomain
 
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnets
@@ -70,11 +71,12 @@ module "eks" {
 }
 
 module "oidc" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.0.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.1.0"
   # source = "../../devops-stack-module-oidc-aws-cognito"
 
   cluster_name = module.eks.cluster_name
   base_domain  = module.eks.base_domain
+  subdomain    = local.subdomain
 
   create_pool = true
 
@@ -89,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v4.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v4.2.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -115,11 +117,9 @@ module "metrics-server" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v5.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v6.1.1"
   # source = "../../devops-stack-module-traefik/eks"
 
-  cluster_name   = module.eks.cluster_name
-  base_domain    = module.eks.base_domain
   argocd_project = module.eks.cluster_name
 
   app_autosync           = local.app_autosync
@@ -171,15 +171,17 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v3.0.1"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v3.3.0"
   # source = "../../devops-stack-module-thanos/eks"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
+  subdomain      = local.subdomain
   cluster_issuer = local.cluster_issuer
   argocd_project = module.eks.cluster_name
 
-  app_autosync = local.app_autosync
+  app_autosync           = local.app_autosync
+  enable_service_monitor = local.enable_service_monitor
 
   metrics_storage = {
     bucket_id    = aws_s3_bucket.thanos_metrics_storage.id
@@ -201,11 +203,12 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v9.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v9.2.0"
   # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
+  subdomain      = local.subdomain
   cluster_issuer = local.cluster_issuer
   argocd_project = module.eks.cluster_name
 
@@ -241,11 +244,12 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v4.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v4.2.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
+  subdomain      = local.subdomain
   cluster_issuer = local.cluster_issuer
   argocd_project = module.eks.cluster_name
 
