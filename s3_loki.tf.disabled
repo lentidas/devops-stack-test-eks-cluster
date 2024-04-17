@@ -20,9 +20,6 @@ module "iam_assumable_role_loki" {
 
   # List of ServiceAccounts that have permission to attach to this IAM role
   oidc_fully_qualified_subjects = [
-    # ServiceAccount for Loki standard 
-    "system:serviceaccount:loki-stack:loki-stack",
-    # ServiceAccounts for Loki distributed
     "system:serviceaccount:loki-stack:loki",
   ]
 }

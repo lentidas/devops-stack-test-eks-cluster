@@ -1,3 +1,7 @@
+# Use these resources to create an S3 bucket for the Thanos metrics storage, ONLY if you want to manage the associated 
+# IAM role yourself. Otherwise, use the `storage.tf` file to create the S3 bucket and then set the Thanos and 
+# kube-prometheus-stack modules to create the required IAM roles for you.
+
 resource "aws_s3_bucket" "thanos_metrics_storage" {
   bucket = format("thanos-metrics-storage-%s", module.eks.cluster_name)
 
