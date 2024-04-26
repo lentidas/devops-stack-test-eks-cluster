@@ -151,7 +151,7 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v7.2.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v8.0.0"
   # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_project = module.eks.cluster_name
@@ -171,7 +171,7 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v4.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v5.0.0"
   # source = "../../devops-stack-module-thanos/eks"
 
   cluster_name   = module.eks.cluster_name
@@ -203,8 +203,8 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v10.0.0"
-  source = "../../devops-stack-module-kube-prometheus-stack/eks"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v11.0.0"
+  # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
