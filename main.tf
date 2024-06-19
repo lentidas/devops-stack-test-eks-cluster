@@ -243,22 +243,12 @@ module "kube-prometheus-stack" {
 
   app_autosync = local.app_autosync
 
+  oidc = module.oidc.oidc
+
   metrics_storage = {
     bucket_id               = aws_s3_bucket.thanos_metrics_storage.id
     create_role             = true
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
-  }
-
-  prometheus = {
-    oidc = module.oidc.oidc
-  }
-
-  alertmanager = {
-    oidc = module.oidc.oidc
-  }
-
-  grafana = {
-    oidc = module.oidc.oidc
   }
 
   dependency_ids = {
