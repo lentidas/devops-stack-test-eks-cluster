@@ -40,7 +40,7 @@ module "eks" {
 
   node_groups = {
     "${module.eks.cluster_name}-main" = {
-      ami_type        = "AL2_ARM_64"
+      ami_type        = "AL2_ARM_64" # Use 'AL2_x86_64' for x86 VMs like 'm5.large'
       instance_types  = ["m7g.xlarge"]
       min_size        = 3
       max_size        = 3
@@ -91,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v5.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v5.3.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -142,7 +142,7 @@ module "secrets" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v6.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v7.0.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   argocd_project = module.eks.cluster_name
@@ -156,7 +156,7 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.4.0"
   # source = "../../devops-stack-module-cert-manager/eks"
 
   cluster_name   = module.eks.cluster_name
@@ -264,7 +264,7 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v5.2.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v5.3.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name
