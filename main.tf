@@ -71,7 +71,7 @@ module "eks" {
 }
 
 module "oidc" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-oidc-aws-cognito.git?ref=v1.1.1"
   # source = "../../devops-stack-module-oidc-aws-cognito"
 
   cluster_name = module.eks.cluster_name
@@ -91,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v5.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v5.4.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -136,6 +136,8 @@ module "secrets" {
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
   }
 
+  oidc_client_secret = module.oidc.oidc.client_secret
+
   dependency_ids = {
     argocd = module.argocd_bootstrap.id
   }
@@ -176,7 +178,7 @@ module "cert-manager" {
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v8.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v9.0.0"
   # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_project = module.eks.cluster_name
@@ -196,7 +198,7 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v5.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v6.0.0"
   # source = "../../devops-stack-module-thanos/eks"
 
   cluster_name   = module.eks.cluster_name
@@ -264,7 +266,7 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v5.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v5.4.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name
