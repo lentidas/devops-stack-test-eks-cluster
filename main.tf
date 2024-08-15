@@ -91,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v5.4.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v6.0.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -144,7 +144,7 @@ module "secrets" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v7.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v8.0.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   argocd_project = module.eks.cluster_name
@@ -158,7 +158,7 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.4.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.5.0"
   # source = "../../devops-stack-module-cert-manager/eks"
 
   cluster_name   = module.eks.cluster_name
@@ -229,6 +229,14 @@ module "thanos" {
   }
 }
 
+resource "dmsnitch_snitch" "alertmanager_deadmanssnitch_url" {
+  name = "${module.eks.cluster_name}-deadmansnitch"
+
+  interval    = "30_minute"
+  tags        = ["sandbox"]
+  alert_email = ["is-devops-stack-alert-aaaanyw3phgkla47zgvvbtydpy@camptocamp.slack.com"]
+}
+
 module "kube-prometheus-stack" {
   # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v11.1.1"
   source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
@@ -253,6 +261,8 @@ module "kube-prometheus-stack" {
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
   }
 
+  alertmanager_deadmanssnitch_url = resource.dmsnitch_snitch.alertmanager_deadmanssnitch_url.url
+
   dependency_ids = {
     argocd       = module.argocd_bootstrap.id
     ebs          = module.ebs.id
@@ -266,7 +276,7 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v5.4.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v6.0.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name

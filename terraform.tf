@@ -24,6 +24,10 @@ terraform {
       source  = "oboukili/argocd"
       version = "~> 6"
     }
+    dmsnitch = {
+      source  = "plukevdh/dmsnitch"
+      version = "0.1.5"
+    }
   }
 }
 
