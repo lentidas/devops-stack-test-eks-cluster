@@ -91,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v6.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v6.1.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -144,7 +144,7 @@ module "secrets" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v8.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v8.1.0"
   # source = "../../devops-stack-module-traefik/eks"
 
   argocd_project = module.eks.cluster_name
@@ -158,7 +158,7 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.5.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.6.0"
   # source = "../../devops-stack-module-cert-manager/eks"
 
   cluster_name   = module.eks.cluster_name
@@ -276,7 +276,7 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v6.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v6.1.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name
