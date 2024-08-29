@@ -24,7 +24,7 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v3.2.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v3.3.0"
   # source = "../../devops-stack-module-cluster-eks"
 
   cluster_name       = local.cluster_name
@@ -91,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v6.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v6.3.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -116,13 +116,21 @@ module "metrics-server" {
   }
 }
 
+resource "dmsnitch_snitch" "alertmanager_deadmanssnitch_url" {
+  name = "${module.eks.cluster_name}-deadmansnitch"
+
+  interval    = "30_minute"
+  tags        = ["sandbox"]
+  alert_email = ["is-devops-stack-alert-aaaanyw3phgkla47zgvvbtydpy@camptocamp.slack.com"]
+}
+
 module "secrets" {
-  source = "git::https://github.com/lentidas/devops-stack-module-secrets.git//aws_secrets_manager?ref=feat/initial_implementation"
+  # source = "git::https://github.com/lentidas/devops-stack-module-secrets.git//aws_secrets_manager?ref=ISDEVOPS-296"
   # source = "git::https://github.com/lentidas/devops-stack-module-secrets.git//k8s_secrets?ref=feat/initial_implementation"
-  # source = "../../devops-stack-module-secrets/aws_secrets_manager"
+  source = "../../devops-stack-module-secrets/aws_secrets_manager"
   # source = "../../devops-stack-module-secrets/k8s_secrets"
 
-  target_revision = "feat/initial_implementation"
+  target_revision = "ISDEVOPS-296"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
@@ -136,7 +144,8 @@ module "secrets" {
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
   }
 
-  oidc_client_secret = module.oidc.oidc.client_secret
+  alertmanager_deadmanssnitch_url = resource.dmsnitch_snitch.alertmanager_deadmanssnitch_url.url
+  oidc_client_secret              = module.oidc.oidc.client_secret
 
   dependency_ids = {
     argocd = module.argocd_bootstrap.id
@@ -229,18 +238,10 @@ module "thanos" {
   }
 }
 
-resource "dmsnitch_snitch" "alertmanager_deadmanssnitch_url" {
-  name = "${module.eks.cluster_name}-deadmansnitch"
-
-  interval    = "30_minute"
-  tags        = ["sandbox"]
-  alert_email = ["is-devops-stack-alert-aaaanyw3phgkla47zgvvbtydpy@camptocamp.slack.com"]
-}
-
 module "kube-prometheus-stack" {
   # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v11.1.1"
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
-  # source = "../../devops-stack-module-kube-prometheus-stack/eks"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
+  source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   target_revision = "ISDEVOPS-296"
 
@@ -261,7 +262,7 @@ module "kube-prometheus-stack" {
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
   }
 
-  alertmanager_deadmanssnitch_url = resource.dmsnitch_snitch.alertmanager_deadmanssnitch_url.url
+  alertmanager_enable_deadmanssnitch_url = true
 
   dependency_ids = {
     argocd       = module.argocd_bootstrap.id
@@ -276,7 +277,7 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v6.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v6.3.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name
@@ -291,7 +292,7 @@ module "argocd" {
   app_autosync = local.app_autosync
 
   high_availability = {
-    enabled = false
+    enabled = true
   }
 
   admin_enabled = false

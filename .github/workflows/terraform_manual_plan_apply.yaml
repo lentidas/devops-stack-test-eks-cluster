@@ -21,6 +21,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
       DMS_TOKEN: ${{ secrets.DMS_TOKEN }}
+      TF_VAR_alertmanager_slack_route_api_url: ${{ secrets.ALERTMANAGER_SLACK_ROUTE_API_URL}}
 
     steps:
 
