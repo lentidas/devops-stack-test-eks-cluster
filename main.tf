@@ -125,9 +125,9 @@ resource "dmsnitch_snitch" "alertmanager_deadmanssnitch_url" {
 }
 
 module "secrets" {
-  # source = "git::https://github.com/lentidas/devops-stack-module-secrets.git//aws_secrets_manager?ref=ISDEVOPS-296"
+  source = "git::https://github.com/lentidas/devops-stack-module-secrets.git//aws_secrets_manager?ref=ISDEVOPS-296"
   # source = "git::https://github.com/lentidas/devops-stack-module-secrets.git//k8s_secrets?ref=feat/initial_implementation"
-  source = "../../devops-stack-module-secrets/aws_secrets_manager"
+  # source = "../../devops-stack-module-secrets/aws_secrets_manager"
   # source = "../../devops-stack-module-secrets/k8s_secrets"
 
   target_revision = "ISDEVOPS-296"
@@ -240,8 +240,8 @@ module "thanos" {
 
 module "kube-prometheus-stack" {
   # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v11.1.1"
-  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
-  source = "../../devops-stack-module-kube-prometheus-stack/eks"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
+  # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   target_revision = "ISDEVOPS-296"
 
