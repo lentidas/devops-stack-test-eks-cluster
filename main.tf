@@ -24,7 +24,7 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v3.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cluster-eks.git?ref=v4.2.0"
   # source = "../../devops-stack-module-cluster-eks"
 
   cluster_name       = local.cluster_name
@@ -91,7 +91,7 @@ module "oidc" {
 }
 
 module "argocd_bootstrap" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v6.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git//bootstrap?ref=v7.1.0"
   # source = "../../devops-stack-module-argocd/bootstrap"
 
   argocd_projects = {
@@ -104,7 +104,7 @@ module "argocd_bootstrap" {
 }
 
 module "metrics-server" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=v2.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-metrics-server.git?ref=v3.0.0"
   # source = "../../devops-stack-module-metrics-server"
 
   argocd_project = module.eks.cluster_name
@@ -125,9 +125,9 @@ resource "dmsnitch_snitch" "alertmanager_deadmanssnitch_url" {
 }
 
 module "secrets" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-secrets.git//aws_secrets_manager?ref=ISDEVOPS-296"
-  # source = "git::https://github.com/camptocamp/devops-stack-module-secrets.git//k8s_secrets?ref=feat/initial_implementation"
-  # source = "../../devops-stack-module-secrets/aws_secrets_manager"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-secrets.git//aws_secrets_manager?ref=ISDEVOPS-296"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-secrets.git//k8s_secrets?ref=ISDEVOPS-296"
+  source = "../../devops-stack-module-secrets/aws_secrets_manager"
   # source = "../../devops-stack-module-secrets/k8s_secrets"
 
   target_revision = "ISDEVOPS-296"
@@ -153,7 +153,7 @@ module "secrets" {
 }
 
 module "traefik" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v8.1.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v9.0.1"
   # source = "../../devops-stack-module-traefik/eks"
 
   argocd_project = module.eks.cluster_name
@@ -167,8 +167,11 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v8.6.0"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v9.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=fix/change-cluster-issuers-structure"
   # source = "../../devops-stack-module-cert-manager/eks"
+
+  target_revision = "fix/change-cluster-issuers-structure"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
@@ -181,13 +184,18 @@ module "cert-manager" {
 
   cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
 
+  replicas = {
+    controller = 3
+    webhook    = 2
+  }
+
   dependency_ids = {
     argocd = module.argocd_bootstrap.id
   }
 }
 
 module "loki-stack" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v9.0.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-loki-stack.git//eks?ref=v10.0.0"
   # source = "../../devops-stack-module-loki-stack/eks"
 
   argocd_project = module.eks.cluster_name
@@ -207,26 +215,28 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v6.0.0"
-  # source = "../../devops-stack-module-thanos/eks"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v7.0.1"
+  source = "../../devops-stack-module-thanos/eks"
 
-  cluster_name   = module.eks.cluster_name
-  base_domain    = module.eks.base_domain
-  subdomain      = local.subdomain
-  cluster_issuer = local.cluster_issuer
-  argocd_project = module.eks.cluster_name
+  target_revision = "ISDEVOPS-296"
+
+  cluster_name        = module.eks.cluster_name
+  base_domain         = module.eks.base_domain
+  subdomain           = local.subdomain
+  cluster_issuer      = local.cluster_issuer
+  argocd_project      = module.eks.cluster_name
+  enable_short_domain = true # TODO add a local for this
+  secrets_names       = module.secrets.secrets_names
 
   app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
+
+  oidc = module.oidc.oidc
 
   metrics_storage = {
     bucket_id               = aws_s3_bucket.thanos_metrics_storage.id
     create_role             = true
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
-  }
-
-  thanos = {
-    oidc = module.oidc.oidc
   }
 
   dependency_ids = {
@@ -239,18 +249,19 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v11.1.1"
+  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v13.0.0"
   source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
   # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
   target_revision = "ISDEVOPS-296"
 
-  cluster_name   = module.eks.cluster_name
-  base_domain    = module.eks.base_domain
-  subdomain      = local.subdomain
-  cluster_issuer = local.cluster_issuer
-  argocd_project = module.eks.cluster_name
-  secrets_names  = module.secrets.secrets_names
+  cluster_name        = module.eks.cluster_name
+  base_domain         = module.eks.base_domain
+  subdomain           = local.subdomain
+  cluster_issuer      = local.cluster_issuer
+  argocd_project      = module.eks.cluster_name
+  enable_short_domain = false # TODO add a local for this
+  secrets_names       = module.secrets.secrets_names
 
   app_autosync = local.app_autosync
 
@@ -277,7 +288,7 @@ module "kube-prometheus-stack" {
 }
 
 module "argocd" {
-  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v6.3.0"
+  source = "git::https://github.com/camptocamp/devops-stack-module-argocd.git?ref=v7.1.0"
   # source = "../../devops-stack-module-argocd"
 
   cluster_name   = module.eks.cluster_name
