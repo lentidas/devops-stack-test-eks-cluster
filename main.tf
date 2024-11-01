@@ -124,34 +124,6 @@ resource "dmsnitch_snitch" "alertmanager_deadmanssnitch_url" {
   alert_email = ["is-devops-stack-alert-aaaanyw3phgkla47zgvvbtydpy@camptocamp.slack.com"]
 }
 
-module "secrets" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-secrets.git//aws_secrets_manager?ref=ISDEVOPS-296"
-  # source = "git::https://github.com/camptocamp/devops-stack-module-secrets.git//k8s_secrets?ref=ISDEVOPS-296"
-  source = "../../devops-stack-module-secrets/aws_secrets_manager"
-  # source = "../../devops-stack-module-secrets/k8s_secrets"
-
-  target_revision = "ISDEVOPS-296"
-
-  cluster_name   = module.eks.cluster_name
-  base_domain    = module.eks.base_domain
-  argocd_project = module.eks.cluster_name
-
-  app_autosync           = local.app_autosync
-  enable_service_monitor = local.enable_service_monitor
-
-  aws_iam_role = {
-    create_role             = true
-    cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
-  }
-
-  alertmanager_deadmanssnitch_url = resource.dmsnitch_snitch.alertmanager_deadmanssnitch_url.url
-  oidc_client_secret              = module.oidc.oidc.client_secret
-
-  dependency_ids = {
-    argocd = module.argocd_bootstrap.id
-  }
-}
-
 module "traefik" {
   source = "git::https://github.com/camptocamp/devops-stack-module-traefik.git//eks?ref=v9.0.1"
   # source = "../../devops-stack-module-traefik/eks"
@@ -167,11 +139,7 @@ module "traefik" {
 }
 
 module "cert-manager" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v9.0.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=fix/change-cluster-issuers-structure"
-  # source = "../../devops-stack-module-cert-manager/eks"
-
-  target_revision = "fix/change-cluster-issuers-structure"
+  source = "git::https://github.com/camptocamp/devops-stack-module-cert-manager.git//eks?ref=v10.0.0"
 
   cluster_name   = module.eks.cluster_name
   base_domain    = module.eks.base_domain
@@ -215,23 +183,21 @@ module "loki-stack" {
 }
 
 module "thanos" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v7.0.1"
-  source = "../../devops-stack-module-thanos/eks"
+  source = "git::https://github.com/camptocamp/devops-stack-module-thanos.git//eks?ref=v7.0.1"
+  # source = "../../devops-stack-module-thanos/eks"
 
-  target_revision = "ISDEVOPS-296"
-
-  cluster_name        = module.eks.cluster_name
-  base_domain         = module.eks.base_domain
-  subdomain           = local.subdomain
-  cluster_issuer      = local.cluster_issuer
-  argocd_project      = module.eks.cluster_name
-  enable_short_domain = true # TODO add a local for this
-  secrets_names       = module.secrets.secrets_names
+  cluster_name   = module.eks.cluster_name
+  base_domain    = module.eks.base_domain
+  subdomain      = local.subdomain
+  cluster_issuer = local.cluster_issuer
+  argocd_project = module.eks.cluster_name
 
   app_autosync           = local.app_autosync
   enable_service_monitor = local.enable_service_monitor
 
-  oidc = module.oidc.oidc
+  thanos = {
+    oidc = module.oidc.oidc
+  }
 
   metrics_storage = {
     bucket_id               = aws_s3_bucket.thanos_metrics_storage.id
@@ -249,23 +215,28 @@ module "thanos" {
 }
 
 module "kube-prometheus-stack" {
-  # source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v13.0.0"
-  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=ISDEVOPS-296"
+  source = "git::https://github.com/camptocamp/devops-stack-module-kube-prometheus-stack.git//eks?ref=v13.0.1"
   # source = "../../devops-stack-module-kube-prometheus-stack/eks"
 
-  target_revision = "ISDEVOPS-296"
-
-  cluster_name        = module.eks.cluster_name
-  base_domain         = module.eks.base_domain
-  subdomain           = local.subdomain
-  cluster_issuer      = local.cluster_issuer
-  argocd_project      = module.eks.cluster_name
-  enable_short_domain = false # TODO add a local for this
-  secrets_names       = module.secrets.secrets_names
+  cluster_name   = module.eks.cluster_name
+  base_domain    = module.eks.base_domain
+  subdomain      = local.subdomain
+  cluster_issuer = local.cluster_issuer
+  argocd_project = module.eks.cluster_name
 
   app_autosync = local.app_autosync
 
-  oidc = module.oidc.oidc
+  prometheus = {
+    oidc = module.oidc.oidc
+  }
+
+  grafana = {
+    oidc = module.oidc.oidc
+  }
+
+  alertmanager = {
+    oidc = module.oidc.oidc
+  }
 
   metrics_storage = {
     bucket_id               = aws_s3_bucket.thanos_metrics_storage.id
@@ -273,12 +244,9 @@ module "kube-prometheus-stack" {
     cluster_oidc_issuer_url = module.eks.cluster_oidc_issuer_url
   }
 
-  alertmanager_enable_deadmanssnitch_url = true
-
   dependency_ids = {
     argocd       = module.argocd_bootstrap.id
     ebs          = module.ebs.id
-    secrets      = module.secrets.id
     traefik      = module.traefik.id
     cert-manager = module.cert-manager.id
     oidc         = module.oidc.id
